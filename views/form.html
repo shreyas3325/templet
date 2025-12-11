@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Activity Report Generator — Form</title>
+
+<style>
+:root{ --bg:#f6f7fb; --card:#fff; --accent:#4b0082; --muted:#6b7280; --radius:12px; --shadow:0 6px 18px rgba(38,50,56,.06); --max:1100px; }
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Arial;background:var(--bg);padding:28px}
+.container{max-width:var(--max);margin:0 auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:56px;height:56px;border-radius:8px;overflow:hidden;box-shadow:var(--shadow)}
+.logo img{width:100%;height:100%;object-fit:cover}
+.card{background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);margin-bottom:16px;border:1px solid rgba(15,23,42,.04)}
+.section-title{display:flex;justify-content:space-between;align-items:center}
+.section-title h2{margin:0;color:var(--accent)}
+label{display:block;margin-top:10px;font-weight:600}
+input[type="text"], textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd}
+textarea{min-height:110px;resize:vertical}
+.file-drop{border:2px dashed #e9e9ef;padding:10px;border-radius:8px;background:#fafafa;margin-top:6px}
+.file-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.thumb{width:90px;height:60px;border-radius:6px;overflow:hidden;border:1px solid #ddd}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.row{display:flex;gap:12px}
+.btn{background:var(--accent);color:#fff;padding:9px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
+.btn.secondary{background:#fff;color:var(--accent);border:1px solid rgba(75,0,130,.08)}
+.small{padding:6px 10px;font-size:13px;border-radius:7px}
+.att-card{border:1px dashed #e9e9ef;padding:10px;border-radius:8px;margin-bottom:8px}
+.bottom-actions{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+@media(max-width:920px){.header{flex-direction:column;align-items:flex-start}.bottom-actions{flex-direction:column;gap:10px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="brand"><div class="logo"><img src="/static/logo1.png" alt="logo1"></div><div><h1 style="margin:0">Activity Report Generator</h1><div style="color:#6b7280;font-size:13px">Light • Dashboard</div></div></div>
+    <div class="logo"><img src="/static/logo2.png" alt="logo2"></div>
+  </div>
+
+  <form id="reportForm" action="/generate" method="post" enctype="multipart/form-data">
+    <div class="card">
+      <div class="section-title"><h2>Activity Details</h2><div style="color:var(--muted)">Page 1</div></div>
+      <label>Activity Name</label><input type="text" name="activityName">
+      <label>Co-ordinator</label><input type="text" name="coordinator">
+      <div class="row" style="margin-top:8px">
+        <div style="flex:1"><label>Date</label><input type="text" name="activityDate"></div>
+        <div style="width:180px"><label>Duration</label><input type="text" name="duration"></div>
+      </div>
+      <div class="row">
+        <div style="flex:1"><label>PO & POs</label><input type="text" name="po"></div>
+        <div style="flex:1"><label>Program Line</label><input type="text" name="programLine"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><h2>Table of Contents</h2></div>
+      <div id="tocContainer"></div>
+      <div style="margin-top:10px"><button type="button" class="btn secondary small" onclick="addTocRow()">+ Add TOC Row</button></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><h2>Invitation & Poster</h2></div>
+      <label>Invitation Images</label>
+      <div class="file-drop"><input type="file" name="invitation[]" id="invIn" multiple accept="image/*"></div>
+      <div class="file-list" id="invPrev"></div>
+
+      <label>Poster Images</label>
+      <div class="file-drop"><input type="file" name="poster[]" id="posIn" multiple accept="image/*"></div>
+      <div class="file-list" id="posPrev"></div>
+
+      <label>Resource Person Photo</label>
+      <input type="file" name="resource[]" id="resIn" accept="image/*"><div class="file-list" id="resPrev"></div>
+      <label>Resource Description</label><textarea name="resourceText"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><h2>Attendance Sections</h2></div>
+      <div id="attList"></div>
+      <div style="margin-top:8px"><button type="button" class="btn secondary small" onclick="addAttendance()">+ Add Attendance Section</button></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><h2>Session Report</h2></div>
+      <div class="row"><div style="flex:1"><label>Session Name</label><input type="text" name="sessionName"></div><div style="width:200px"><label>Resource Person</label><input type="text" name="sessionResourcePerson"></div></div>
+      <div style="margin-top:8px" class="row"><div style="flex:1"><label>Co-ordinator(s)</label><input type="text" name="sessionCoordinators"></div><div style="flex:1"><label>Intended Participants</label><input type="text" name="sessionParticipants"></div></div>
+      <div style="margin-top:8px" class="row"><div style="flex:1"><label>Start Date</label><input type="text" name="sessionStartDate"></div><div style="flex:1"><label>Start Time</label><input type="text" name="sessionStartTime"></div></div>
+      <div style="margin-top:8px" class="row"><div style="flex:1"><label>End Date</label><input type="text" name="sessionEndDate"></div><div style="flex:1"><label>End Time</label><input type="text" name="sessionEndTime"></div></div>
+      <label style="margin-top:8px">Session Activity Title</label><input type="text" name="sessionActivityTitle">
+      <label style="margin-top:8px">Preamble Session</label><input type="text" name="sessionPreamble">
+      <label style="margin-top:8px">Summary</label><textarea name="sessionSummary"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><h2>Photos & Feedback</h2></div>
+      <label>Photos</label><div class="file-drop"><input type="file" name="photos[]" id="phoIn" multiple accept="image/*"></div>
+      <div class="file-list" id="phoPrev"></div>
+
+      <label>Feedback Images</label><div class="file-drop"><input type="file" name="feedback[]" id="fedIn" multiple accept="image/*"></div>
+      <div class="file-list" id="fedPrev"></div>
+    </div>
+
+    <div class="bottom-actions">
+      <div>
+        <button type="button" class="btn secondary" onclick="document.getElementById('reportForm').reset(); clearPreviews();">Clear</button>
+        <button type="button" class="btn secondary" onclick="previewPDF()" style="margin-left:8px">Preview</button>
+      </div>
+
+      <div>
+        <!-- Generate PDF -->
+        <button type="submit" class="btn">Download PDF</button>
+
+        <!-- Download DOCX: sends entire form to /generate-docx -->
+        <button type="submit" class="btn secondary" formaction="/generate-docx" formmethod="post" style="margin-left:8px">Download DOCX</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+/* TOC */
+function addTocRow(v = '') {
+  const c = document.getElementById('tocContainer');
+  const row = document.createElement('div');
+  row.style.marginBottom = '8px';
+  row.innerHTML = `<div style="display:flex;gap:8px"><input type="text" name="tocRows[]" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd" placeholder="Content title" value="${(v||'')}"><button type="button" class="small" style="margin-left:6px" onclick="this.parentElement.parentElement.remove()">Delete</button></div>`;
+  c.appendChild(row);
+}
+addTocRow();
+
+/* Attendance */
+let attIndex = 0;
+function addAttendance() {
+  const list = document.getElementById('attList');
+  const div = document.createElement('div');
+  div.className = 'att-card';
+  div.innerHTML = `<label>Section Title</label><input type="text" name="attendanceTitles[]"><label style="margin-top:6px">Upload Images</label><input type="file" name="attendanceFiles${attIndex}[]" multiple accept="image/*" class="att-file"> <div class="file-list"></div><div style="margin-top:8px"><button type="button" class="small" onclick="this.closest('.att-card').remove()">Delete Section</button></div>`;
+  list.appendChild(div);
+
+  // preview for this attendance input
+  const input = div.querySelector('input[type=file]');
+  const preview = div.querySelector('.file-list');
+  input.addEventListener('change', function(){
+    preview.innerHTML = '';
+    Array.from(this.files || []).forEach(f => {
+      const r = new FileReader();
+      r.onload = e => {
+        const t = document.createElement('div'); t.className='thumb'; t.innerHTML = `<img src="${e.target.result}">`;
+        preview.appendChild(t);
+      };
+      r.readAsDataURL(f);
+    });
+  });
+
+  attIndex++;
+}
+addAttendance();
+
+/* Previews for main uploads */
+function preview(input, boxId){
+  const box = document.getElementById(boxId); box.innerHTML = '';
+  Array.from(input.files||[]).forEach(f=>{
+    const r = new FileReader();
+    r.onload = e => {
+      const t = document.createElement('div'); t.className = 'thumb'; t.innerHTML = `<img src="${e.target.result}">`;
+      box.appendChild(t);
+    };
+    r.readAsDataURL(f);
+  });
+}
+
+document.getElementById('invIn').addEventListener('change', function(){ preview(this,'invPrev'); });
+document.getElementById('posIn').addEventListener('change', function(){ preview(this,'posPrev'); });
+document.getElementById('resIn').addEventListener('change', function(){ preview(this,'resPrev'); });
+document.getElementById('phoIn').addEventListener('change', function(){ preview(this,'phoPrev'); });
+document.getElementById('fedIn').addEventListener('change', function(){ preview(this,'fedPrev'); });
+
+function clearPreviews() {
+  ['invPrev','posPrev','resPrev','phoPrev','fedPrev'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
+  document.getElementById('attList').innerHTML = '';
+  attIndex = 0; addAttendance();
+  document.getElementById('tocContainer').innerHTML = ''; addTocRow();
+}
+
+/* Preview PDF: submit form to /preview and open in new tab */
+function previewPDF() {
+  const form = document.getElementById('reportForm');
+  const origTarget = form.target;
+  const origAction = form.action;
+
+  form.target = "_blank";
+  form.action = "/preview";
+  form.submit();
+
+  // restore
+  form.target = origTarget;
+  form.action = origAction;
+}
+</script>
+</body>
+</html>
